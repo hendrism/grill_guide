@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Grill Riser Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Earthy Concrete -->
+    <!-- Application Structure Plan: The static markdown guide is transformed into a task-oriented single-page application. The structure prioritizes usability for a user actively performing the DIY project, likely on a mobile device. A sticky top navigation allows instant jumping between key sections: an interactive 'Visualizer' for planning, a 'Checklist' for preparation, and the 'Installation' steps presented as a focused, one-at-a-time accordion. This structure turns a passive document into an active tool, enhancing comprehension with the visualizer and providing utility with checklists and progress tracking, which is more effective than simple scrolling for a real-world task. -->
+    <!-- Visualization & Content Choices: 
+        - Materials & Tools List -> Goal: Organize/Track -> Presentation: Interactive Checklists (HTML/JS) -> Interaction: Users can check items off as they are gathered. Justification: Provides utility and a sense of progress during the preparation phase.
+        - Layout Schematic -> Goal: Visualize/Understand -> Presentation: Interactive Diagram (HTML/CSS Grid/JS) -> Interaction: Buttons to toggle between Layer 1, a staggered Layer 2, and a side-view profile. Justification: More engaging and clearer for understanding spatial layout and staggering than a static text diagram.
+        - Cost Estimation -> Goal: Inform/Plan -> Presentation: Simple Calculator (HTML Input/JS) -> Interaction: User enters price per stone; total cost is calculated live. Justification: A simple value-add that enhances the planning utility of the guide.
+        - Installation Steps -> Goal: Guide Process -> Presentation: Accordion with Progress Bar (HTML/JS) -> Interaction: Users expand the current step, keeping others collapsed to maintain focus. A 'Complete Step' button updates the visual progress bar. Justification: Breaks the process into manageable chunks, prevents overwhelm, and provides positive feedback.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            background-color: #F5F5F4;
+            color: #373331;
+            font-family: 'Inter', sans-serif;
+        }
+        .paver {
+            background-color: #D8B4A8;
+            border: 2px solid #7D706B;
+            transition: all 0.3s ease-in-out;
+        }
+        .paver-staggered {
+            transform: translate(10%, 10%);
+        }
+        .mortar {
+            background-color: #A8A29E;
+            height: 0.5rem;
+        }
+        .nav-link {
+            transition: all 0.2s;
+        }
+        .nav-link.active {
+            color: #DC2626;
+            border-bottom-color: #DC2626;
+        }
+        .step-accordion-header {
+            cursor: pointer;
+        }
+        .step-accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .step-accordion-content.open {
+            max-height: 500px;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-10 shadow-sm">
+        <nav class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4 border-b border-stone-200">
+                <h1 class="text-xl md:text-2xl font-bold text-stone-800">Grill Riser Guide</h1>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#visualizer" class="nav-link text-stone-600 hover:text-red-600 border-b-2 border-transparent pb-1">Visualizer</a>
+                    <a href="#checklist" class="nav-link text-stone-600 hover:text-red-600 border-b-2 border-transparent pb-1">Checklist</a>
+                    <a href="#installation" class="nav-link text-stone-600 hover:text-red-600 border-b-2 border-transparent pb-1">Installation</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="intro" class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-stone-900 mb-2">Build a 3¼" Grill Riser Base</h2>
+            <p class="text-lg text-stone-600 max-w-3xl mx-auto">This interactive guide uses eight 16"x16" pavers to create a level, elevated, and heat-safe base, providing a total lift of approximately 3¼".</p>
+        </section>
+
+        <section id="visualizer" class="mb-12 p-6 bg-white rounded-xl shadow-lg scroll-mt-24">
+            <h3 class="text-2xl font-bold text-stone-800 mb-4 border-b pb-2">Project Visualizer & Layout</h3>
+            <p class="text-stone-600 mb-6">The base will cover a 31.5"x31.5" area, intentionally larger than your 21"x33" grill footprint to ensure stability and air circulation.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <div id="visualizer-diagram" class="relative w-full aspect-square max-w-sm mx-auto bg-stone-200 rounded-lg p-4 grid grid-cols-2 gap-2">
+                        <div id="paver-a1" class="paver rounded-md"></div>
+                        <div id="paver-b1" class="paver rounded-md"></div>
+                        <div id="paver-c1" class="paver rounded-md"></div>
+                        <div id="paver-d1" class="paver rounded-md"></div>
+                        <div id="side-view" class="hidden absolute inset-0 p-4 flex flex-col justify-center items-center">
+                            <div class="paver w-full h-1/3 flex items-center justify-center text-white font-bold text-sm">Layer 2 (1.75")</div>
+                            <div class="mortar w-full flex items-center justify-center text-white font-semibold text-xs">Mortar Pad (≈0.125")</div>
+                            <div class="paver w-full h-1/3 flex items-center justify-center text-white font-bold text-sm">Layer 1 (1.75")</div>
+                            <p class="mt-2 text-stone-700 font-semibold">Total Lift: ≈ 3¼"</p>
+                        </div>
+                    </div>
+                     <div class="flex justify-center space-x-2 mt-4">
+                        <button id="view-l1" class="bg-red-600 text-white px-4 py-2 rounded-md shadow hover:bg-red-700 transition text-sm">Layer 1 View</button>
+                        <button id="view-l2" class="bg-stone-500 text-white px-4 py-2 rounded-md shadow hover:bg-stone-600 transition text-sm">Layer 2 (Staggered)</button>
+                        <button id="view-side" class="bg-stone-500 text-white px-4 py-2 rounded-md shadow hover:bg-stone-600 transition text-sm">Side View</button>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-stone-100 p-4 rounded-lg">
+                        <h4 class="font-bold text-lg text-stone-700">Cost Estimator</h4>
+                        <p class="text-sm text-stone-600 mb-2">Estimate the cost of the 8 required pavers.</p>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-stone-600">$</span>
+                            <input type="number" id="price-input" placeholder="4.48" class="w-24 p-2 border border-stone-300 rounded-md">
+                            <span class="text-stone-600">x 8 pavers =</span>
+                            <span id="total-cost" class="font-bold text-xl text-red-600">$35.84</span>
+                        </div>
+                    </div>
+                    <div class="bg-stone-100 p-4 rounded-lg">
+                        <h4 class="font-bold text-lg text-stone-700">Key Dimensions</h4>
+                        <ul class="list-disc list-inside text-stone-600 text-sm">
+                            <li><span class="font-semibold">Paver Dim.:</span> 15.75" x 15.75" x 1.75"</li>
+                            <li><span class="font-semibold">Base Size:</span> 31.5" x 31.5"</li>
+                            <li><span class="font-semibold">Target Grill Space:</span> 21" x 33"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="checklist" class="mb-12 p-6 bg-white rounded-xl shadow-lg scroll-mt-24">
+             <h3 class="text-2xl font-bold text-stone-800 mb-4 border-b pb-2">Preparation Checklist</h3>
+             <p class="text-stone-600 mb-6">Verify you have all materials and tools from the guide before beginning installation.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="text-xl font-bold text-stone-700 mb-3">Materials Required</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-stone-300 text-red-600 focus:ring-red-500 mr-3"><span class="text-stone-700"><strong>8x</strong> 16"x16" Step Stones</span></li>
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-stone-300 text-red-600 focus:ring-red-500 mr-3"><span class="text-stone-700"><strong>1 bag</strong> Type S Mortar Mix (60–80 lb bag)</span></li>
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-stone-300 text-red-600 focus:ring-red-500 mr-3"><span class="text-stone-700"><strong>1 tube</strong> Outdoor Adhesive (Optional alternative to mortar)</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-stone-700 mb-3">Tools Required</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-stone-300 text-red-600 focus:ring-red-500 mr-3"><span class="text-stone-700">Trowel or Margin Trowel</span></li>
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-stone-300 text-red-600 focus:ring-red-500 mr-3"><span class="text-stone-700">Rubber Mallet & Small Level (12–24")</span></li>
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-stone-300 text-red-600 focus:ring-red-500 mr-3"><span class="text-stone-700">Stiff Brush, Sponge & Bucket</span></li>
+                        <li class="flex items-center"><input type="checkbox" class="h-5 w-5 rounded border-stone-300 text-red-600 focus:ring-red-500 mr-3"><span class="text-stone-700">Safety Gear (Gloves & Eye Protection)</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="installation" class="scroll-mt-24 mb-12">
+            <h3 class="text-2xl font-bold text-stone-800 mb-2">Installation Steps (5-Step Plan)</h3>
+             <p class="text-stone-600 mb-4">Follow the process step-by-step. Mark each step as complete to track your progress.</p>
+
+            <div class="w-full bg-stone-200 rounded-full h-2.5 mb-6">
+                <div id="progress-bar" class="bg-red-600 h-2.5 rounded-full" style="width: 0%; transition: width 0.5s;"></div>
+            </div>
+
+            <div id="steps-container" class="space-y-4">
+                <div class="step-accordion bg-white rounded-xl shadow-lg">
+                    <div class="step-accordion-header flex justify-between items-center p-4">
+                        <h4 class="text-lg font-bold text-stone-800">Step 1: Prep the Existing Base</h4>
+                        <span class="text-2xl transform transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="step-accordion-content px-4 text-stone-600">
+                        <ol class="list-decimal list-inside space-y-2 mb-4">
+                            <li><strong>Clean:</strong> Remove all loose debris, dirt, and any crumbling mortar from the current grill base area.</li>
+                            <li><strong>Sweep/Vacuum:</strong> Ensure you expose solid stone or concrete beneath. A clean base is essential for mortar adhesion.</li>
+                        </ol>
+                        <button class="complete-btn w-full bg-stone-500 text-white py-2 rounded-md hover:bg-stone-600 transition" data-step="1">Mark Step 1 as Complete</button>
+                    </div>
+                </div>
+                <div class="step-accordion bg-white rounded-xl shadow-lg">
+                    <div class="step-accordion-header flex justify-between items-center p-4">
+                        <h4 class="text-lg font-bold text-stone-800">Step 2: Lay the Mortar Pads</h4>
+                        <span class="text-2xl transform transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="step-accordion-content px-4 text-stone-600">
+                        <ol class="list-decimal list-inside space-y-2 mb-4">
+                            <li><strong>Mix Mortar:</strong> Mix the Type S mortar to a thick, workable consistency (like **peanut butter**).</li>
+                            <li><strong>Trowel Pads:</strong> For each of the four bottom stones, trowel four or five small, isolated pads of mortar onto the base (corners and center). **Avoid filling the entire area.**</li>
+                        </ol>
+                        <button class="complete-btn w-full bg-stone-500 text-white py-2 rounded-md hover:bg-stone-600 transition" data-step="2">Mark Step 2 as Complete</button>
+                    </div>
+                </div>
+                <div class="step-accordion bg-white rounded-xl shadow-lg">
+                    <div class="step-accordion-header flex justify-between items-center p-4">
+                        <h4 class="text-lg font-bold text-stone-800">Step 3: Set the First Layer (Stones 1–4)</h4>
+                        <span class="text-2xl transform transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="step-accordion-content px-4 text-stone-600">
+                        <ol class="list-decimal list-inside space-y-2 mb-4">
+                             <li><strong>Placement:</strong> Set the first four 16"x16" stones onto the mortar pads in a 2x2 square configuration.</li>
+                             <li><strong>Level:</strong> Use the rubber mallet to gently tap each stone until they are flush and stable.</li>
+                             <li><strong>Check:</strong> Use your level across the stones in all directions. Adjust any low points by adding or removing a small amount of mortar beneath the stone, then re-tapping.</li>
+                             <li><strong>Wipe:</strong> Immediately wipe off any squeeze-out mortar with a damp sponge.</li>
+                        </ol>
+                        <button class="complete-btn w-full bg-stone-500 text-white py-2 rounded-md hover:bg-stone-600 transition" data-step="3">Mark Step 3 as Complete</button>
+                    </div>
+                </div>
+                 <div class="step-accordion bg-white rounded-xl shadow-lg">
+                    <div class="step-accordion-header flex justify-between items-center p-4">
+                        <h4 class="text-lg font-bold text-stone-800">Step 4: Add the Second Layer (Stones 5–8)</h4>
+                        <span class="text-2xl transform transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="step-accordion-content px-4 text-stone-600">
+                        <ol class="list-decimal list-inside space-y-2 mb-4">
+                            <li><strong>Bonding:</strong> Apply a thin layer of mortar pads or a bead of construction adhesive directly onto the top of the first layer of stones.</li>
+                            <li><strong>Stagger:</strong> Place the second set of four stones, slightly **staggering their seams** over the joints of the first layer for maximum structural stability.</li>
+                            <li><strong>Final Level:</strong> Tap them down gently with the mallet and check the level across the new top surface.</li>
+                        </ol>
+                        <button class="complete-btn w-full bg-stone-500 text-white py-2 rounded-md hover:bg-stone-600 transition" data-step="4">Mark Step 4 as Complete</button>
+                    </div>
+                </div>
+                 <div class="step-accordion bg-white rounded-xl shadow-lg">
+                    <div class="step-accordion-header flex justify-between items-center p-4">
+                        <h4 class="text-lg font-bold text-stone-800">Step 5: Reinstall the Grill</h4>
+                        <span class="text-2xl transform transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="step-accordion-content px-4 text-stone-600">
+                        <ol class="list-decimal list-inside space-y-2 mb-4">
+                             <li><strong>Cure Time:</strong> If you used mortar, <strong>wait at least 24 hours</strong> before placing the heavy grill back onto the riser.</li>
+                             <li><strong>Ventilation:</strong> Ensure your grill has proper air circulation and clearance (the $\frac{3}{4}"$ gap around the original footprint is sufficient for most units).</li>
+                        </ol>
+                        <button class="complete-btn w-full bg-stone-500 text-white py-2 rounded-md hover:bg-stone-600 transition" data-step="5">Mark Step 5 as Complete</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="text-center text-sm text-stone-500 py-6 border-t border-stone-200">
+            <p>Project Results: Total Lift $\approx 3\frac{1}{4}$". Stable, heat-safe, no cuts required.</p>
+        </footer>
+
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Cost Calculator ---
+            const priceInput = document.getElementById('price-input');
+            const totalCostEl = document.getElementById('total-cost');
+            
+            // Set initial cost based on placeholder
+            priceInput.value = 4.48;
+            totalCostEl.textContent = `$${(4.48 * 8).toFixed(2)}`;
+
+            const updateCost = () => {
+                const price = parseFloat(priceInput.value) || 0;
+                const total = (price * 8).toFixed(2);
+                totalCostEl.textContent = `$${total}`;
+            };
+
+            priceInput.addEventListener('input', updateCost);
+
+            // --- Visualizer ---
+            const viewL1Btn = document.getElementById('view-l1');
+            const viewL2Btn = document.getElementById('view-l2');
+            const viewSideBtn = document.getElementById('view-side');
+            const pavers = document.querySelectorAll('.paver');
+            const sideView = document.getElementById('side-view');
+            const visualizerDiagram = document.getElementById('visualizer-diagram');
+
+            function setActiveButton(activeBtn) {
+                [viewL1Btn, viewL2Btn, viewSideBtn].forEach(btn => {
+                    btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    btn.classList.add('bg-stone-500', 'hover:bg-stone-600');
+                });
+                activeBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                activeBtn.classList.remove('bg-stone-500', 'hover:bg-stone-600');
+            }
+
+            viewL1Btn.addEventListener('click', () => {
+                sideView.classList.add('hidden');
+                visualizerDiagram.classList.add('grid');
+                pavers.forEach(p => p.classList.remove('paver-staggered'));
+                setActiveButton(viewL1Btn);
+            });
+
+            viewL2Btn.addEventListener('click', () => {
+                sideView.classList.add('hidden');
+                visualizerDiagram.classList.add('grid');
+                pavers.forEach(p => p.classList.add('paver-staggered'));
+                setActiveButton(viewL2Btn);
+            });
+
+            viewSideBtn.addEventListener('click', () => {
+                sideView.classList.remove('hidden');
+                visualizerDiagram.classList.remove('grid');
+                setActiveButton(viewSideBtn);
+            });
+
+            // Set default view to Layer 1
+            setActiveButton(viewL1Btn);
+
+            // --- Installation Accordion & Progress Bar ---
+            const stepHeaders = document.querySelectorAll('.step-accordion-header');
+            const completeBtns = document.querySelectorAll('.complete-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const totalSteps = 5;
+            let completedSteps = new Set();
+
+            stepHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const arrow = header.querySelector('span');
+                    
+                    if (content.classList.contains('open')) {
+                        content.classList.remove('open');
+                        arrow.style.transform = 'rotate(0deg)';
+                    } else {
+                        // Close others when one opens
+                        stepHeaders.forEach(h => {
+                            h.nextElementSibling.classList.remove('open');
+                            h.querySelector('span').style.transform = 'rotate(0deg)';
+                        });
+                        content.classList.add('open');
+                        arrow.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+            completeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const step = btn.dataset.step;
+                    completedSteps.add(step);
+                    
+                    btn.textContent = 'Step Completed!';
+                    btn.classList.remove('bg-stone-500', 'hover:bg-stone-600');
+                    btn.classList.add('bg-green-600');
+                    btn.disabled = true;
+
+                    const progress = (completedSteps.size / totalSteps) * 100;
+                    progressBar.style.width = `${progress}%`;
+                });
+            });
+
+            // --- Smooth Scrolling & Active Nav Link ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section[id]');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px" });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+
+</body>
+</html>
